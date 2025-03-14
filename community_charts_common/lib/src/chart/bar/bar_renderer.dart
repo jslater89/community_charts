@@ -97,6 +97,7 @@ class BarRenderer<D>
         domainAxis,
         domainAxis.rangeBand.round(),
         config.maxBarWidthPx,
+        config.minBarWidthPx,
         details.measure,
         details.measureOffset!,
         measureAxis,
@@ -221,6 +222,7 @@ class BarRenderer<D>
           domainAxis,
           domainWidth,
           config.maxBarWidthPx,
+          config.minBarWidthPx,
           measureValue,
           measureOffsetValue,
           measureAxis,
@@ -398,6 +400,7 @@ class BarRenderer<D>
       ImmutableAxis<D> domainAxis,
       int domainWidth,
       int? maxBarWidthPx,
+      int? minBarWidthPx,
       num? measureValue,
       num measureOffsetValue,
       ImmutableAxis<num> measureAxis,
@@ -437,11 +440,25 @@ class BarRenderer<D>
               .round();
     }
 
+    // The width of the bar group for centering purposes, which is the same as
+    // the domain width unless minBarWidthPx is set and
+    var centerOffsetWidth = domainWidth;
+
     // Make sure that bars are at least one pixel wide, so that they will always
     // be visible on the chart. Ideally we should do something clever with the
     // size of the chart, and the density and periodicity of the data, but this
     // at least ensures that dense charts still have visible data.
-    barWidth = max(1, barWidth);
+    if (minBarWidthPx != null) {
+      // If minBarWidthPx is set, use it as the minimum width, with the understanding
+      // that it might cause bars be wider than the domain width. (This is primarily
+      // an override for cases like histograms where the domain is a domain value, not
+      // a bin number, and might be arbitrarily wide compared to the number of bars.)
+      barWidth = max(minBarWidthPx, barWidth);
+      centerOffsetWidth = barWidth;
+    }
+    else {
+      barWidth = max(1, barWidth);
+    }
 
     // Flip bar group index for calculating location on the domain axis if RTL.
     final adjustedBarGroupIndex =
@@ -450,13 +467,13 @@ class BarRenderer<D>
     // Calculate the start and end of the bar, taking into account accumulated
     // padding for grouped bars.
     final previousAverageWidth = adjustedBarGroupIndex > 0
-        ? ((domainWidth - spacingLoss) *
+        ? ((centerOffsetWidth - spacingLoss) *
                 (previousBarGroupWeight! / adjustedBarGroupIndex))
             .round()
         : 0;
 
     final domainStart = (domainAxis.getLocation(domainValue)! -
-            (domainWidth / 2) +
+            (centerOffsetWidth / 2) +
             (previousAverageWidth + _barGroupInnerPaddingPx) *
                 adjustedBarGroupIndex)
         .round();

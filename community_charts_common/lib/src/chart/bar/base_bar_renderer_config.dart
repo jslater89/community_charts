@@ -66,6 +66,10 @@ abstract class BaseBarRendererConfig<D> extends LayoutViewConfig
   // wide.
   final int? maxBarWidthPx;
 
+  /// The minimum bar width in pixels, or null to defer to the chart renderer's
+  /// layout algorithm.
+  final int? minBarWidthPx;
+
   final FillPatternType? fillPattern;
 
   /// The padding between bar stacks.
@@ -103,6 +107,7 @@ abstract class BaseBarRendererConfig<D> extends LayoutViewConfig
       this.layoutPaintOrder,
       this.minBarLengthPx = 0,
       this.maxBarWidthPx,
+      this.minBarWidthPx,
       this.fillPattern,
       this.stackedBarPaddingPx = 1,
       this.strokeWidthPx = 0.0,
@@ -132,6 +137,7 @@ abstract class BaseBarRendererConfig<D> extends LayoutViewConfig
         other.groupingType == groupingType &&
         other.minBarLengthPx == minBarLengthPx &&
         other.maxBarWidthPx == maxBarWidthPx &&
+        other.minBarWidthPx == minBarWidthPx &&
         other.stackedBarPaddingPx == stackedBarPaddingPx &&
         other.strokeWidthPx == strokeWidthPx &&
         other.symbolRenderer == symbolRenderer &&
@@ -147,6 +153,7 @@ abstract class BaseBarRendererConfig<D> extends LayoutViewConfig
     hash = hash * 31 + groupingType.hashCode;
     hash = hash * 31 + minBarLengthPx.hashCode;
     hash = hash * 31 + maxBarWidthPx.hashCode;
+    hash = hash * 31 + minBarWidthPx.hashCode;
     hash = hash * 31 + stackedBarPaddingPx.hashCode;
     hash = hash * 31 + strokeWidthPx.hashCode;
     hash = hash * 31 + symbolRenderer.hashCode;
