@@ -15,7 +15,7 @@
 
 import 'dart:async' show Timer;
 import 'dart:math' show Point;
-import 'package:flutter/gestures.dart' show PointerHoverEvent;
+import 'package:flutter/gestures.dart' show PointerHoverEvent, PointerScrollEvent;
 import 'package:flutter/material.dart'
     show
         BuildContext,
@@ -27,6 +27,7 @@ import 'package:flutter/material.dart'
         TapDownDetails,
         TapUpDetails,
         MouseRegion;
+import 'package:flutter/widgets.dart';
 
 import 'behaviors/chart_behavior.dart' show GestureType;
 import 'chart_container.dart' show ChartContainer, ChartContainerRenderObject;
@@ -66,15 +67,32 @@ class ChartGestureDetector {
 
     final wantHover = desiredGestures.contains(GestureType.onHover);
 
-    return GestureDetector(
-      onTapDown: wantTapDown ? onTapDown : null,
-      onTapUp: wantTap ? onTapUp : null,
-      onScaleStart: wantDrag ? onScaleStart : null,
-      onScaleUpdate: wantDrag ? onScaleUpdate : null,
-      onScaleEnd: wantDrag ? onScaleEnd : null,
-      child: wantHover
-          ? MouseRegion(onHover: onHover, child: chartContainer)
-          : chartContainer,
+    return Listener(
+      onPointerSignal: (event) {
+        if (event is PointerScrollEvent) {
+          if (wantDrag) {
+            onScaleStart(ScaleStartDetails(
+              focalPoint: event.localPosition,
+            ));
+            onScaleUpdate(ScaleUpdateDetails(
+              focalPoint: event.localPosition,
+              scale: event.scrollDelta.dy < 0 ? 1.1 : 0.9,
+              rotation: 0.0,
+            ));
+            onScaleEnd(ScaleEndDetails());
+          }
+        }
+      },
+      child: GestureDetector(
+        onTapDown: wantTapDown ? onTapDown : null,
+        onTapUp: wantTap ? onTapUp : null,
+        onScaleStart: wantDrag ? onScaleStart : null,
+        onScaleUpdate: wantDrag ? onScaleUpdate : null,
+        onScaleEnd: wantDrag ? onScaleEnd : null,
+        child: wantHover
+            ? MouseRegion(onHover: onHover, child: chartContainer)
+            : chartContainer,
+      ),
     );
   }
 
